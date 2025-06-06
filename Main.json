@@ -1,0 +1,2278 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "56285c72-40bf-4a86-9651-458bb3d16f8b",
+              "name": "message.Session",
+              "value": "={{ $json.body.instance }}\n",
+              "type": "string"
+            },
+            {
+              "id": "64f396ec-fbef-4c23-b3b7-cc2bbae9e3f6",
+              "name": "message.Chatid",
+              "value": "={{ $json.body.data.key.remoteJid.split('@').first() }}\n",
+              "type": "string"
+            },
+            {
+              "id": "2148d995-6de4-436c-974c-01c47ae59f31",
+              "name": "message.pushName",
+              "value": "={{ $json.body.data.pushName }}\n",
+              "type": "string"
+            },
+            {
+              "id": "f21f04e0-bf36-4df5-87b4-95a15a771b5b",
+              "name": "message.Payload_id",
+              "value": "={{ $json.body.data.key.fromMe + '_' + $json.body.data.key.remoteJid + '_' + $json.body.data.key.id }}\n",
+              "type": "string"
+            },
+            {
+              "id": "7f452e6c-00bc-498f-b03c-ad03b14e12b7",
+              "name": "message.Event",
+              "value": "={{ $json.body.event }}\n",
+              "type": "string"
+            },
+            {
+              "id": "c818f94d-519c-433d-bce7-3241bec4230b",
+              "name": "message.Message",
+              "value": "={{ $json.body.data.message.conversation }}\n",
+              "type": "string"
+            },
+            {
+              "id": "3a60d6a9-83a1-449a-af53-51a32c84e8b9",
+              "name": "message.fromMe",
+              "value": "={{ $json.body.data.key.fromMe }}\n",
+              "type": "string"
+            },
+            {
+              "id": "d5099485-8fb4-4940-9b0f-068b38afc9f8",
+              "name": "message.TimeStamp",
+              "value": "={{ new Date($json.body.data.messageTimestamp * 1000).toISOString() }}\n\n",
+              "type": "string"
+            },
+            {
+              "id": "a9b21de7-f4c7-4e8d-b9e5-7d1a4f85c6d2",
+              "name": "message.uniqueId",
+              "value": "={{ $json.body.data.instanceId + '_' + $json.body.data.messageTimestamp }}\n",
+              "type": "string"
+            },
+            {
+              "id": "bc72e5d9-6f8c-4a1b-b16e-9d8f23a87e2c",
+              "name": "config.waitTime",
+              "value": 8,
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "options": {},
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        560,
+        0
+      ],
+      "id": "9838dd0e-5487-41a7-9f27-9732fe07acbe",
+      "name": "Dados"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.message.Event }}",
+                    "rightValue": "={{ $json.message.Event }}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "combinator": "and"
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "options": {},
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        1000,
+        0
+      ],
+      "id": "6f38cc1f-eb8f-4023-a87c-5c6efffcb44c",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "amount": "={{ $('Dados').item.json.config.waitTime }}"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1840,
+        320
+      ],
+      "id": "5bbb75b5-bbf8-46cc-b024-c6a8e0c36300",
+      "name": "Wait2",
+      "webhookId": "72be6f14-f252-4473-a01d-a8c357c63ef6"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "aad0f814-386f-4a97-b404-ec6a72c428ba",
+                    "leftValue": "={{ $json.messages.length > 0 ? JSON.parse($json.messages.last()).TimeStamp : 0 }}\n",
+                    "rightValue": "={{ $now.minus($('Dados').item.json.config.waitTime || 0, 'seconds') }}\n",
+                    "operator": {
+                      "type": "dateTime",
+                      "operation": "before"
+                    },
+                    "combinator": "and"
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "looseTypeValidation": true,
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "options": {},
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        1600,
+        0
+      ],
+      "id": "c6ab7da9-844c-4405-b55c-2492a50fa16e",
+      "name": "Switch1"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "propertyName": "=messages",
+        "key": "={{ $('Dados').item.json.message.Chatid }}",
+        "keyType": "list",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        1400,
+        0
+      ],
+      "id": "48c61a9d-04ee-41a1-a0f0-108eec03a1ff",
+      "name": "GetRedis",
+      "credentials": {
+        "redis": {
+          "id": "XBCqX4LQFNxwuYJ3",
+          "name": "Redis account 4"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "8fa73324-8ebc-4e9a-ad5d-9d749f225a00",
+              "name": "messages",
+              "value": "={{ $json.messages.map(value => JSON.parse(value).Message).join('\\n') }}",
+              "type": "string"
+            },
+            {
+              "id": "2e3a6b19-f7d5-4c91-b1f7-8b6e49a0c6d1",
+              "name": "messageCount",
+              "value": "={{ $json.messages.length }}",
+              "type": "number"
+            },
+            {
+              "id": "49c73fd8-92a5-47ef-ae33-dd1f3c02e4c5",
+              "name": "firstMessageTimestamp",
+              "value": "={{ JSON.parse($json.messages.first()).TimeStamp }}",
+              "type": "string"
+            },
+            {
+              "id": "5d8f1e90-b3a7-4c2a-9a78-2e1f9c7d4b6e",
+              "name": "lastMessageTimestamp",
+              "value": "={{ JSON.parse($json.messages.last()).TimeStamp }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "options": {},
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2040,
+        20
+      ],
+      "id": "3648cb73-cbde-4ef0-bcaf-4ecf6e2cd4ee",
+      "name": "Mensagens"
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "key": "={{ $('Dados').item.json.message.Chatid }}"
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        1800,
+        0
+      ],
+      "id": "081285af-0e46-46f0-9ae9-d2940f5a4528",
+      "name": "Redis",
+      "credentials": {
+        "redis": {
+          "id": "XBCqX4LQFNxwuYJ3",
+          "name": "Redis account 4"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        880,
+        260
+      ],
+      "id": "fc885c02-a8a5-4b95-8286-8ec59b1c4135",
+      "name": "Error Handler"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "faf3220f-2458-440b-9bb4-5922d5053c7c",
+              "leftValue": "={{ $json.body.data.key.remoteJid.split('@').first() }}",
+              "rightValue": "5527999150432",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        280,
+        0
+      ],
+      "id": "abc295fc-9ee1-4a73-90d9-19d6dc0bdd43",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        4480,
+        -200
+      ],
+      "id": "0af33147-333c-473b-a2ca-4ead5b8ef515",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "C8GE50ZfR3k4QQNa",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "22edb069-500e-4a09-803a-ac85a84e3d0d",
+              "name": "output",
+              "value": "={{ $json.output.split('\\n\\n') }}",
+              "type": "array"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        5440,
+        -660
+      ],
+      "id": "cb9bbdab-065c-44ac-a89b-06900e4594d3",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "output",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        5620,
+        -660
+      ],
+      "id": "e603e758-88c8-4838-b9f2-a3cc12411fbb",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        5860,
+        -660
+      ],
+      "id": "e723fb11-d221-4004-85ea-833df9ed53cd",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "amount": 3
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        6420,
+        -560
+      ],
+      "id": "503ff4b0-492a-488c-8a60-2299224481f9",
+      "name": "Wait",
+      "webhookId": "040f86e3-52e6-4dd3-914d-36cfd0209abd"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/1-2dwvNKDXt_lO-sKZaD7mIhMK_s7AVe8s6V4RNK-67U/edit?usp=sharing",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 508815251,
+          "mode": "list",
+          "cachedResultName": "Cópia de Página1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1-2dwvNKDXt_lO-sKZaD7mIhMK_s7AVe8s6V4RNK-67U/edit#gid=508815251"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Numero do usuario": "={{ $('Dados').item.json.message.Chatid }}",
+            "Usuario": "={{ $('Edit Fields3').all()[0].json['Nome do Usuario'] }}\n",
+            "Medicamentos": "={{ $('Edit Fields3').all()[0].json['Nome do medicamento'] }}\n",
+            "Horarios": "={{ $('Edit Fields3').all()[0].json['Horario do medicamento'] }}",
+            "Quantidade disponivel": "={{ $('Edit Fields3').all()[0].json['Quantidade Disponivel de Medicamento'] }}\n",
+            "Numero do responsavel": "={{ $('Edit Fields3').all()[0].json['Numero do responsavel'] }}\n"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Numero do usuario",
+              "displayName": "Numero do usuario",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Usuario",
+              "displayName": "Usuario",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Medicamentos",
+              "displayName": "Medicamentos",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Horarios",
+              "displayName": "Horarios",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Quantidade disponivel",
+              "displayName": "Quantidade disponivel",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Numero do responsavel",
+              "displayName": "Numero do responsavel",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.5,
+      "position": [
+        5100,
+        -180
+      ],
+      "id": "c4c7f96a-8650-49ce-ac44-9b8e06143ab8",
+      "name": "Criar usuario",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "7OJMKr3ppIFVaL8V",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/1-2dwvNKDXt_lO-sKZaD7mIhMK_s7AVe8s6V4RNK-67U/edit?usp=sharing",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 508815251,
+          "mode": "list",
+          "cachedResultName": "Cópia de Página1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1-2dwvNKDXt_lO-sKZaD7mIhMK_s7AVe8s6V4RNK-67U/edit#gid=508815251"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Numero do usuario": "={{ $('Dados').item.json.message.Chatid }}",
+            "Usuario": "={{ $('Edit Fields3').all()[0].json['Nome do Usuario'] }}\n",
+            "Horarios": "={{ $('Edit Fields3').all()[0].json['Horario do medicamento'] }}\n",
+            "Quantidade disponivel": "={{ $('Edit Fields3').all()[0].json['Quantidade Disponivel de Medicamento'] }}\n",
+            "Numero do responsavel": "={{ $('Edit Fields3').all()[0].json['Numero do responsavel'] }}\n",
+            "Medicamentos": "={{ $('Edit Fields3').all()[0].json['Nome do medicamento'] }}"
+          },
+          "matchingColumns": [
+            "Numero do usuario"
+          ],
+          "schema": [
+            {
+              "id": "Numero do usuario",
+              "displayName": "Numero do usuario",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Usuario",
+              "displayName": "Usuario",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Medicamentos",
+              "displayName": "Medicamentos",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Horarios",
+              "displayName": "Horarios",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Quantidade disponivel",
+              "displayName": "Quantidade disponivel",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Numero do responsavel",
+              "displayName": "Numero do responsavel",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.5,
+      "position": [
+        5260,
+        -180
+      ],
+      "id": "e679a5d7-88b1-4f13-a37b-954623e1ed94",
+      "name": "Atualizar dados",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "7OJMKr3ppIFVaL8V",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/1-2dwvNKDXt_lO-sKZaD7mIhMK_s7AVe8s6V4RNK-67U/edit?usp=sharing",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Página1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1-2dwvNKDXt_lO-sKZaD7mIhMK_s7AVe8s6V4RNK-67U/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.5,
+      "position": [
+        4880,
+        -200
+      ],
+      "id": "7358232b-4ffd-425b-a8e5-a5ad5e486458",
+      "name": "Pegar dados",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "7OJMKr3ppIFVaL8V",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Mensagens').item.json.messages }}",
+        "options": {
+          "systemMessage": "=Você é um agente de IA especializado no **cadastro e atualização de medicamentos**. Toda sua funcionalidade depende exclusivamente de ferramentas do Google Sheets.  \n❗ Você **NUNCA pode processar, salvar ou confirmar qualquer dado sem o uso explícito de uma dessas ferramentas**:\n\n---\n\n📌 FERRAMENTAS DISPONÍVEIS E USO OBRIGATÓRIO:\n\n| Ferramenta            | Função                      | Uso Obrigatório                                   |\n|------------------------|-----------------------------|---------------------------------------------------|\n| Pegar dados           | Verificar se o usuário existe | PRIMEIRO PASSO de qualquer interação              |\n| Criar usuário         | Registrar novo usuário       | ÚNICO MEIO de cadastro                            |\n| Atualizar dados       | Alterar dados existentes     | ÚNICO MEIO de atualização                         |\n\n---\n\n📋 PROTOCOLO DE ATENDIMENTO (PASSO A PASSO):\n\n### 1. INICIAR COM VERIFICAÇÃO DE EXISTÊNCIA:\n```text\n[EXECUTANDO FERRAMENTA: Pegar dados]\nUse essa ferramenta antes de qualquer outra coisa.\n\nSe o usuário existir, exiba os dados atuais e avance para etapa de atualização.\n\nSe não existir, colete os seguintes dados:\n\n2. DADOS OBRIGATÓRIOS PARA CADASTRO:\nNome do usuário\n\nNome do(s) medicamento(s)\n\nHorários de uso\n\nQuantidade disponível\n\nNúmero do responsável\n\nDepois, pergunte:\n\ntext\nCopiar\nEditar\nEntendido! Confirma que posso seguir com o cadastro?\nSe o usuário confirmar:\n\n3. EXECUTAR CADASTRO:\ntext\nCopiar\nEditar\n[EXECUTANDO FERRAMENTA: Criar usuário]\n📦 Estrutura JSON de Entrada:\njson\nCopiar\nEditar\n{\n  \"Usuario\": \"Gabriel Oliveira de Souza Aguiar\",\n  \"Medicamentos\": \"Dipirona, Alegra, Alegra 15 mg\",\n  \"Horarios\": \"6 da manhã, 18:00, 19:00\",\n  \"Quantidade disponivel\": \"5 cápsulas, 5 cápsulas, 10 cápsulas\",\n  \"Numero do responsavel\": \"21979799390\"\n}\n4. SE O USUÁRIO JÁ EXISTIR:\nMostre os dados retornados por Pegar dados\n\nPergunte individualmente:\n\ntext\nCopiar\nEditar\nVocê deseja atualizar [campo] para [novo valor]?\nApós confirmação, execute:\n\ntext\nCopiar\nEditar\n[EXECUTANDO FERRAMENTA: Atualizar dados]\n📦 Estrutura JSON de Atualização:\njson\nCopiar\nEditar\n{\n  \"Usuario\": \"Gabriel Oliveira de Souza Aguiar\",\n  \"Medicamentos\": \"Dipirona, Alegra 15 mg\",\n  \"Horarios\": \"6 da manhã, 19:00\",\n  \"Quantidade disponivel\": \"5 cápsulas, 10 cápsulas\",\n  \"Numero do responsavel\": \"21979799390\"\n}\n5. ESTRUTURA DO REGISTRO FINAL NO SHEETS:\njson\nCopiar\nEditar\n{\n  \"Numero do usuario\": \"{{ $('Dados').item.json.message.Chatid }}\",\n  \"Usuario\": \"{{ $('Edit Fields3').all()[0].json['Nome do Usuario'] }}\",\n  \"Medicamentos\": \"{{ $('Edit Fields3').all()[0].json['Nome do medicamento'] }}\",\n  \"Horarios\": \"{{ $('Edit Fields3').all()[0].json['Horario do medicamento'] }}\",\n  \"Quantidade disponivel\": \"{{ $('Edit Fields3').all()[0].json['Quantidade Disponivel de Medicamento'] }}\",\n  \"Numero do responsavel\": \"{{ $('Edit Fields3').all()[0].json['Numero do responsavel'] }}\"\n}\n⚠️ REGRAS ABSOLUTAS:\n\nNunca confirme ações sem executar a ferramenta correspondente.\n\nNunca diga “cadastrado com sucesso” se você não executou Criar usuário.\n\nNunca diga “atualizado com sucesso” sem usar Atualizar dados.\n\nSempre execute Pegar dados antes de qualquer coisa.\n\n✅ Exemplo Correto de Fluxo:\n\ntext\nCopiar\nEditar\nUsuário: Quero cadastrar um novo medicamento.\nAgente:\n[EXECUTANDO FERRAMENTA: Pegar dados]\n→ Usuário não cadastrado. Por favor, envie:\n- Nome\n- Medicamento(s)\n- Quantidade\n- Horário(s)\n- Telefone do responsável\n\nUsuário: Gabriel, Dipirona, 5 cápsulas, 6 da manhã, 21979799390  \nAgente: Entendido! Confirma que posso seguir com o cadastro?  \nUsuário: Sim  \nAgente:  \n[EXECUTANDO FERRAMENTA: Criar usuário]\n→ Cadastro realizado com sucesso!"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        4740,
+        -500
+      ],
+      "id": "aa5cf1ba-722b-4505-b224-ed5299e6740b",
+      "name": "Cadastro/Atualização"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        2220,
+        300
+      ],
+      "id": "46ba1164-17ac-4009-8915-d1a317830801",
+      "name": "OpenAI Chat Model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "C8GE50ZfR3k4QQNa",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "22edb069-500e-4a09-803a-ac85a84e3d0d",
+              "name": "output",
+              "value": "={{ $json.output.split('\\n\\n') }}",
+              "type": "array"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        3760,
+        120
+      ],
+      "id": "4814d884-3dd1-4438-8e2b-1d7811c551b4",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "output",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        3940,
+        120
+      ],
+      "id": "b8b4c029-d00b-42bd-a96a-a0a7061af2d1",
+      "name": "Split Out1"
+    },
+    {
+      "parameters": {
+        "amount": 3
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        4640,
+        160
+      ],
+      "id": "3059baf7-07bd-4edb-9869-4ed6e9e205ba",
+      "name": "Wait1",
+      "webhookId": "040f86e3-52e6-4dd3-914d-36cfd0209abd"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Mensagens').item.json.messages }}",
+        "options": {
+          "systemMessage": "Você é um agente de IA especializado em conversar com idosos de forma clara, acolhedora e empática.\nSeu papel é explicativo e orientador, não operacional. Você não realiza cadastros ou edições de dados, mas deve ajudar o idoso a entender como funciona o processo e encaminhá-lo corretamente, se ele desejar.\n\n🎯 Função do agente:\nManter uma conversa acolhedora com o cliente (idoso)\n\nResponder dúvidas gerais sobre saúde, bem-estar ou medicamentos (de forma genérica)\n\nExplicar como funciona o processo de cadastro ou controle de remédios\n\nRedirecionar o usuário somente após confirmação clara, garantindo que o sistema possa ser reativado corretamente\n\n✅ Você pode:\nDizer que existe um sistema de cadastro de medicamentos\n\nExplicar como esse processo funciona, de forma clara e simples\n\nInformar que outro assistente é o responsável por realizar essas ações\n\nOferecer, com empatia, o redirecionamento para esse outro assistente\n\nPedir confirmação para redirecionar, sem afirmar que já está fazendo algo\n\n❌ Você não deve:\nDizer que está salvando, processando ou enviando dados\n\nColetar dados como nome, remédio, horários, etc.\n\nAcessar, preencher ou modificar cadastros\n\nSimular execução de ações no sistema\n\nRedirecionar automaticamente sem consentimento explícito do usuário\n\n🔁 Comportamento síncrono:\n💡 Como o fluxo é acionado somente por mensagens recebidas, nada deve ser dito como se estivesse acontecendo no fundo do sistema.\nPeça sempre uma confirmação para qualquer ação, especialmente redirecionamento.\n\n💬 Exemplos de como agir:\nCliente: \"Você pode me cadastrar?\"\nResposta correta:\n\n\"Posso te explicar como funciona! Existe um assistente que ajuda com o cadastro dos seus remédios. Quer que eu te direcione pra ele agora?\"\n\nCliente: \"Estou tomando algo novo. Posso te contar?\"\nResposta correta:\n\n\"Ah, que bom você me contar! Mas quem pode registrar isso certinho é o assistente de cadastros. Posso te encaminhar pra ele? É rapidinho.\"\n\nCliente: \"Como funciona esse negócio de controle de medicamentos?\"\nResposta correta:\n\n\"Funciona assim: você diz os remédios que toma, os horários e a quantidade, e um assistente ajuda a manter tudo registrado pra você. Se quiser começar isso agora, posso te conectar com ele. Tudo bem?\"\n\n🧾 Tom e estilo:\nEmpático, acolhedor e gentil\n\nFrases curtas, diretas e compreensíveis para idosos\n\nEvite termos técnicos ou linguagem apressada\n\nSempre confirme antes de encerrar ou redirecionar\n\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        3320,
+        80
+      ],
+      "id": "d70e4972-ed54-40ce-ad64-bc35558e671a",
+      "name": "chat comum"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        3220,
+        300
+      ],
+      "id": "c6cdd74d-8cd0-4a3f-a1e9-5d20fa75c51b",
+      "name": "OpenAI Chat Model2",
+      "credentials": {
+        "openAiApi": {
+          "id": "C8GE50ZfR3k4QQNa",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "=define",
+        "text": "={{ $('Mensagens').item.json.messages }}",
+        "options": {
+          "systemMessage": "=🧠 Prompt para Agente de IA – Geração de JSON Estruturado para Cadastro de Medicamentos\nVocê é um agente de IA responsável por transformar frases em linguagem natural sobre medicamentos em um bloco JSON estruturado, utilizado para cadastrar, atualizar ou excluir informações de um idoso em um sistema de controle de saúde.\n\n🎯 Tarefa principal:\nDada uma entrada do usuário (como: “Quero cadastrar Escitalopram, tomo às 10h, tenho 5 comprimidos”), você deve gerar como única resposta o seguinte formato JSON preenchido com os dados extraídos da mensagem:\n\njson\nCopiar\nEditar\n[\n  {\n    \"response\": [\n      {\n        \"Numero do usuario\": \"{{ JSON.parse($('Redis').item.json.messages[0]).Chatid + '' }}\",\n        \"Usuario\": \"NOME_EXTRAÍDO\",\n        \"Medicamentos\": \"MEDICAMENTO_EXTRAÍDO\",\n        \"Horarios\": \"HORÁRIO_EXTRAÍDO\",\n        \"Quantidade disponivel\": \"QUANTIDADE_EXTRAÍDA\",\n        \"Numero do responsavel\": \"RESPONSAVEL_EXTRAÍDO\"\n      }\n    ]\n  }\n]\n🔧 Instruções ao agente:\nExtraia com precisão as seguintes informações da mensagem:\n\nNome do usuário\n\nNome do(s) medicamento(s)\n\nHorário(s) de uso\n\nQuantidade disponível\n\nNúmero do responsável (se mencionado)\n\nPreencha o JSON apenas com os valores identificados na conversa.\n\nCaso alguma informação não esteja presente, deixe o valor como string vazia (\"\").\n\nA única saída permitida é o JSON completo — sem explicações, comentários ou outros textos fora da estrutura.\n\n🧪 Exemplo 1:\nEntrada:\n\n\"Tomo Escitalopram às 22h, tenho 3 comprimidos. Meu nome é Ana.\"\n\nSaída:\n\njson\nCopiar\nEditar\n[\n  {\n    \"response\": [\n      {\n        \"Numero do usuario\": \"{{ JSON.parse($('Redis').item.json.messages[0]).Chatid + '' }}\",\n        \"Usuario\": \"Ana\",\n        \"Medicamentos\": \"Escitalopram\",\n        \"Horarios\": \"22h\",\n        \"Quantidade disponivel\": \"3\",\n        \"Numero do responsavel\": \"\"\n      }\n    ]\n  }\n]\n🧪 Exemplo 2 (falta o nome):\nEntrada:\n\n\"Tenho Paracetamol, tomo de manhã, só tem 2.\"\n\nSaída:\n\njson\nCopiar\nEditar\n[\n  {\n    \"response\": [\n      {\n        \"Numero do usuario\": \"{{ JSON.parse($('Redis').item.json.messages[0]).Chatid + '' }}\",\n        \"Usuario\": \"\",\n        \"Medicamentos\": \"Paracetamol\",\n        \"Horarios\": \"de manhã\",\n        \"Quantidade disponivel\": \"2\",\n        \"Numero do responsavel\": \"\"\n      }\n    ]\n  }\n]\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        3340,
+        -480
+      ],
+      "id": "b46b969a-6a71-4843-8e55-4b6c6d8b2d7c",
+      "name": "Cadastro/Atualização1"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        3320,
+        -240
+      ],
+      "id": "76f3f401-17f6-463f-bbc1-6241d82537f8",
+      "name": "OpenAI Chat Model3",
+      "credentials": {
+        "openAiApi": {
+          "id": "C8GE50ZfR3k4QQNa",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.messages }}",
+        "options": {
+          "systemMessage": "🧠 Função do Agente:\nVocê é um assistente de saúde com duas funções principais e deve primeiro analisar o contexto da conversa (inclusive mensagens anteriores), antes de classificar a intenção da mensagem atual do usuário.\n\n🎯 Objetivo da tarefa:\nSua única tarefa é identificar corretamente o tipo de intenção do usuário e responder com apenas o número 1 ou 2, conforme as regras abaixo:\n\n🔍 Regras de Classificação:\nResponda 1 → Quando a mensagem for relacionada a:\n\nCadastro de medicamentos\n\nAtualização de dados de medicamentos\n\nExclusão de medicamentos\n\nConsulta de informações sobre remédios, horários ou quantidades\n\nPerguntas sobre nome, dose, horário ou estoque do remédio (mesmo que pareçam dúvidas genéricas)\n\nResponda 2 → Quando a mensagem for relacionada a:\n\nAssuntos gerais (saúde, bem-estar, clima etc.)\n\nConversas genéricas\n\nPerguntas sobre o funcionamento do assistente\n\nQualquer coisa que não seja sobre gerenciamento de medicamentos\n\n🔁 Instruções comportamentais adicionais:\nSempre analise o histórico da conversa antes de responder.\n\nNunca altere o formato da resposta: o output deve ser exclusivamente o número 1 ou 2, sem texto extra.\n\nCaso o usuário retorne dados após uma solicitação anterior de cadastro ou consulta, mantenha o contexto e continue no caminho 1.\n\n🧪 Exemplos:\nEntrada do usuário\tResposta esperada\n\"Quero cadastrar Escitalopram 15mg\"\t1\n\"Acabou meu remédio da noite\"\t1\n\"Quantos comprimidos eu tenho?\"\t1\n\"Qual é a sua função?\"\t2\n\"Você pode me explicar o que é colesterol?\"\t2\n\"Que horas eu tenho que tomar o remédio?\"\t1\n\"É Escitalopram 15mg, tomo à noite\" (após pedido de cadastro)\t1\n\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        2320,
+        20
+      ],
+      "id": "8ef17517-0c63-4566-81d3-f2b56acbe2ee",
+      "name": "AI Agent1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "e5bdcfc0-2c14-457d-bf88-3b9f0f5ddd86",
+              "leftValue": "={{ $json.output }}",
+              "rightValue": "1",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2720,
+        20
+      ],
+      "id": "f8fe8b52-f860-45df-b9ab-ab243438296a",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "22edb069-500e-4a09-803a-ac85a84e3d0d",
+              "name": "output",
+              "value": "={{ $json.output.split('\\n') }}",
+              "type": "array"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        3680,
+        -500
+      ],
+      "id": "c663afbc-ff2c-467a-bc24-e48a69665782",
+      "name": "Edit Fields2"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "output",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        3860,
+        -500
+      ],
+      "id": "4470bb2c-2f54-4a65-a0ce-99647e45ead1",
+      "name": "Split Out2"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "e2c76779-4e57-4803-87d8-d2bad8e07169",
+              "name": "Nome do Usuario",
+              "value": "={{ $('Edit Fields2').item.json.output[6] }}",
+              "type": "string"
+            },
+            {
+              "id": "57477bd5-2634-4146-bbff-ee573659f9ec",
+              "name": "Nome do medicamento",
+              "value": "={{ $('Edit Fields2').item.json.output[7] }}",
+              "type": "string"
+            },
+            {
+              "id": "da8c209e-5a5a-4902-9463-5c16334534a4",
+              "name": "Horario do medicamento",
+              "value": "={{ $('Edit Fields2').item.json.output[8] }}",
+              "type": "string"
+            },
+            {
+              "id": "57a5299b-de37-4fad-af8d-7adb7b639a33",
+              "name": "Quantidade Disponivel de Medicamento",
+              "value": "={{ $('Edit Fields2').item.json.output[9] }}",
+              "type": "string"
+            },
+            {
+              "id": "86b974dd-84df-4189-84cf-3458e86f397f",
+              "name": "Numero do responsavel",
+              "value": "={{ $('Edit Fields2').item.json.output[10] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        4020,
+        -500
+      ],
+      "id": "0d961524-e5ce-4c7d-ba04-1255048ad158",
+      "name": "Edit Fields3"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        4200,
+        120
+      ],
+      "id": "773f6a57-03a0-453a-9e7d-b095735c2ccd",
+      "name": "Loop Over Items1",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "calendarId": {
+          "__rl": true,
+          "value": "fe403ddce8a4b5fb657518d6c64ef845b8fe825688c56c7d4f929936e3b46282@group.calendar.google.com",
+          "mode": "list",
+          "cachedResultName": "Assitente de idosos"
+        },
+        "triggerOn": "eventStarted",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleCalendarTrigger",
+      "typeVersion": 1,
+      "position": [
+        -200,
+        660
+      ],
+      "id": "859c63db-0c06-42a1-9c1e-fde5c7d92c6e",
+      "name": "Google Calendar Trigger",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "vFDrRizAKuxfgVYX",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "22edb069-500e-4a09-803a-ac85a84e3d0d",
+              "name": "output",
+              "value": "={{ $json.output.split('\\n\\n') }}",
+              "type": "array"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        460,
+        660
+      ],
+      "id": "13261af5-a227-4f57-b0d8-3892dec96a95",
+      "name": "Edit Fields4"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "output",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        660,
+        660
+      ],
+      "id": "c0050e34-ade1-4bac-ae00-f473f08a3645",
+      "name": "Split Out3"
+    },
+    {
+      "parameters": {
+        "amount": 3
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1460,
+        760
+      ],
+      "id": "b75545b1-3cb5-40a8-828a-52bd6959ef7e",
+      "name": "Wait3",
+      "webhookId": "040f86e3-52e6-4dd3-914d-36cfd0209abd"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Mensagens').item.json.messages }}",
+        "options": {
+          "systemMessage": "Você é um agente de IA especializado em conversar com idosos de forma clara, acolhedora e empática.\n\nSua principsal função é manter uma conversa agradável, esclarecer dúvidas gerais, e explicar como funciona o cadastro ou controle de medicamentos, embora você mesmo não realize essas ações.\n\n🎯 Função do agente:\nConversar com o cliente (idoso)\n\nResponder dúvidas sobre saúde, bem-estar e medicamentos (de forma genérica)\n\nExplicar como funciona o cadastro, atualização ou controle de remédios\n\nRedirecionar com clareza e empatia se o cliente quiser iniciar o processo de cadastro\n\n✅ Você pode:\nDizer que existe um sistema de cadastro de medicamentos\n\nExplicar como ele funciona de forma simples\n\nDizer que outro assistente irá ajudar caso o idoso queira cadastrar, atualizar ou consultar seus dados\n\nManter a conversa leve, respeitosa e compreensível\n\n❌ Você não deve:\nAcessar, preencher ou editar cadastros\n\nGerar ou manipular dados (como planilhas ou Edit Fields)\n\nSolicitar informações como nome, remédio, horários, etc.\n\nTentar fazer o trabalho do agente responsável por registros\n\n💬 Exemplos de como agir:\nCliente: \"Você pode me cadastrar?\"\n\nResposta do agente:\n\n\"Posso te explicar como funciona! Existe um assistente que ajuda com o cadastro dos seus remédios. Se quiser, posso te direcionar para ele, tudo bem?\"\n\nCliente: \"Como funciona esse negócio de controle de medicamentos?\"\n\nResposta do agente:\n\n\"Funciona assim: você informa os remédios que toma, os horários e a quantidade, e um assistente ajuda a manter tudo registrado. É bem simples, e ajuda a não esquecer nenhum remédio!\"\n\nCliente: \"Estou tomando algo novo. Posso te contar?\"\n\nResposta do agente:\n\n\"Se for sobre um novo remédio, o melhor é conversar com o assistente que faz os cadastros. Quer que eu te direcione para ele?\"\n\n🧾 Tom e estilo:\nEmpático, respeitoso e sempre acolhedor\n\nFrases curtas e fáceis de entender\n\nNão pressiona o idoso, apenas oferece ajuda com calma\n\nAdapta-se ao nível de compreensão do cliente\n\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        40,
+        660
+      ],
+      "id": "fe3671d7-6cb3-461e-ae49-bd8e892d2796",
+      "name": "chat comum1"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        860
+      ],
+      "id": "6c86cf90-a5f5-4c74-802e-54e1af7937ee",
+      "name": "OpenAI Chat Model4",
+      "credentials": {
+        "openAiApi": {
+          "id": "C8GE50ZfR3k4QQNa",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        920,
+        660
+      ],
+      "id": "a701c81e-addc-498e-9214-8c258da87226",
+      "name": "Loop Over Items2",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "resource": "Chatting",
+        "operation": "Send Text",
+        "session": "={{ JSON.parse($('Redis').item.json.messages.first()).Session }}",
+        "chatId": "={{ JSON.parse($('Redis').item.json.messages[0]).Chatid + '' }}",
+        "text": "={{ $json.output }}",
+        "requestOptions": {}
+      },
+      "type": "@devlikeapro/n8n-nodes-waha.WAHA",
+      "typeVersion": 202502,
+      "position": [
+        1200,
+        720
+      ],
+      "id": "444da866-a692-42b4-bff2-77aacd6c2344",
+      "name": "WAHA4",
+      "credentials": {
+        "wahaApi": {
+          "id": "tCOBAcX0RNRyWGge",
+          "name": "WAHA account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "calendar": {
+          "__rl": true,
+          "value": "fe403ddce8a4b5fb657518d6c64ef845b8fe825688c56c7d4f929936e3b46282@group.calendar.google.com",
+          "mode": "list",
+          "cachedResultName": "Assitente de idosos"
+        },
+        "eventId": "={{ $fromAI('Evento_que_acabou_de_comecar') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        280,
+        880
+      ],
+      "id": "96aa368f-d43c-4619-92af-ee0a41b1c75e",
+      "name": "Google Calendar1",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "vFDrRizAKuxfgVYX",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "06e550e3-ce60-4321-86ec-9ed599ae505b",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "c971397a-c7f4-4bfc-8ea8-a1804fea3dc9",
+      "name": "Webhook",
+      "webhookId": "06e550e3-ce60-4321-86ec-9ed599ae505b"
+    },
+    {
+      "parameters": {
+        "operation": "push",
+        "list": "={{ $json.message.Chatid }}",
+        "messageData": "={{ JSON.stringify($json.message) }}",
+        "tail": true
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        1200,
+        0
+      ],
+      "id": "b7a49411-cc7a-401b-9ae2-21b8ec56ed96",
+      "name": "PushRedis",
+      "credentials": {
+        "redis": {
+          "id": "XBCqX4LQFNxwuYJ3",
+          "name": "Redis account 4"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://host.docker.internal:8080/message/sendText/Main",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "number",
+              "value": "={{ $('Dados').item.json.message.Chatid }}"
+            },
+            {
+              "name": "text",
+              "value": "={{ $json.output }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        4420,
+        160
+      ],
+      "id": "3f2d8b1f-f02d-4da6-8613-876880e9b6f4",
+      "name": "HTTP Request",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "J5mhunEBVTg2FLeF",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://host.docker.internal:8080/message/sendText/Main",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "number",
+              "value": "={{ $('Dados').item.json.message.Chatid }}"
+            },
+            {
+              "name": "text",
+              "value": "={{ $json.output }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        6180,
+        -600
+      ],
+      "id": "6226bb4f-141f-417c-ba13-27ba898d9cbd",
+      "name": "HTTP Request1",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "J5mhunEBVTg2FLeF",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fieldsToAggregate": {
+          "fieldToAggregate": [
+            {
+              "fieldToAggregate": "=Dados{{ $json['Nome do Usuario'] }}{{ $json['Nome do medicamento'] }}{{ $json['Horario do medicamento'] }}{{ $json['Quantidade Disponivel de Medicamento'] }}{{ $json['Numero do responsavel'] }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        4320,
+        -500
+      ],
+      "id": "8e7ac8e9-c1d5-45fb-bd47-87cfb0e8e240",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Dados').item.json.message.Chatid }}",
+        "contextWindowLength": 50
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.3,
+      "position": [
+        3440,
+        -260
+      ],
+      "id": "af931434-20aa-4752-8f97-a7a428703da3",
+      "name": "Postgres Chat Memory",
+      "credentials": {
+        "postgres": {
+          "id": "CXM46WoJLUyp3p6N",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Dados').item.json.message.Chatid }}",
+        "contextWindowLength": 50
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.3,
+      "position": [
+        2420,
+        300
+      ],
+      "id": "d482a12c-ae01-4bce-824e-5853ce849a35",
+      "name": "Postgres Chat Memory1",
+      "credentials": {
+        "postgres": {
+          "id": "CXM46WoJLUyp3p6N",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Dados').item.json.message.Chatid }}",
+        "contextWindowLength": 50
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.3,
+      "position": [
+        3460,
+        340
+      ],
+      "id": "ac684bae-0137-4cfc-b7ca-3564ef56d754",
+      "name": "Postgres Chat Memory2",
+      "credentials": {
+        "postgres": {
+          "id": "CXM46WoJLUyp3p6N",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Dados').item.json.message.Chatid }}",
+        "contextWindowLength": 50
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.3,
+      "position": [
+        4660,
+        -200
+      ],
+      "id": "b2fbfa2e-e512-4459-a20d-3d21f3b192a9",
+      "name": "Postgres Chat Memory3",
+      "credentials": {
+        "postgres": {
+          "id": "CXM46WoJLUyp3p6N",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "documentId": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/1-2dwvNKDXt_lO-sKZaD7mIhMK_s7AVe8s6V4RNK-67U/edit?usp=sharing",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 508815251,
+          "mode": "list",
+          "cachedResultName": "Cópia de Página1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1-2dwvNKDXt_lO-sKZaD7mIhMK_s7AVe8s6V4RNK-67U/edit#gid=508815251"
+        },
+        "includeInOutput": "both",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTrigger",
+      "typeVersion": 1,
+      "position": [
+        -180,
+        1320
+      ],
+      "id": "7728d058-24a1-43d1-9cf5-f7d64f861d52",
+      "name": "Google Sheets Trigger1",
+      "credentials": {
+        "googleSheetsTriggerOAuth2Api": {
+          "id": "uJNg9WYXaVwbuw3U",
+          "name": "Google Sheets Trigger account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "calendar": {
+          "__rl": true,
+          "value": "gabriel.260902@gmail.com",
+          "mode": "list",
+          "cachedResultName": "gabriel.260902@gmail.com"
+        },
+        "start": "={{ $json['Inicio '] }}",
+        "end": "={{ $json.fim }}",
+        "additionalFields": {
+          "description": "={{ $json.descricao }}",
+          "repeatFrecuency": "Daily",
+          "summary": "={{ $json.titulo }}"
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [
+        1280,
+        1320
+      ],
+      "id": "c19b5760-4277-48b6-8982-e7e661442533",
+      "name": "Google Calendar",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "vFDrRizAKuxfgVYX",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Código JavaScript para Node \"Function\" no n8n\n\nconst info = $input.first().json.info;\n\nlet lastItem = null;\n\nif (Array.isArray(info)) {\n  lastItem = info.length > 0 ? info[info.length - 1] : null;\n} else if (typeof info === 'object' && info !== null) {\n  lastItem = info;\n}\n\nreturn [{ json: { info: lastItem } }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        300,
+        1320
+      ],
+      "id": "98e1fac3-d37f-40fd-8e36-395c97cdec57",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "jsCode": "let raw = $input.first().json.output;\n\nif (!raw) {\n  throw new Error(\"Campo 'output' está vazio ou undefined.\");\n}\n\n// Remove blocos de markdown e espaços extras\nraw = raw.replace(/```json|```/g, '').trim();\n\nconst parsed = JSON.parse(raw);\nreturn parsed;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        860,
+        1320
+      ],
+      "id": "f8062d47-dfca-45d9-9f74-3aab0fb4af86",
+      "name": "Code1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "40b415a4-8581-4525-97c0-c939436b7c85",
+              "name": "info.Numero",
+              "value": "={{ $json.current['Numero do usuario'] }}\n",
+              "type": "string"
+            },
+            {
+              "id": "17f63fe0-69ed-4e11-b73f-5eb50063dd75",
+              "name": "info.Nome",
+              "value": "={{ $json.current.Usuario }}\n",
+              "type": "string"
+            },
+            {
+              "id": "a1190849-a3f5-4303-b883-9981148f7dea",
+              "name": "info.Medicamento",
+              "value": "={{ $json.current.Medicamentos }}\n",
+              "type": "string"
+            },
+            {
+              "id": "6dc1065c-08c8-426c-a2f5-0eb4d491a681",
+              "name": "info.Horario",
+              "value": "={{ $json.current.Horarios }}\n\n",
+              "type": "string"
+            },
+            {
+              "id": "59887bec-f8fc-4092-b5f4-91fa3f30dcae",
+              "name": "info.Quantidadedisponivel",
+              "value": "={{ $json.current['Quantidade disponivel'] }}",
+              "type": "string"
+            },
+            {
+              "id": "17b3484c-e71b-4d6a-a225-cc1ffde5978f",
+              "name": "info.Numeroresponsavel",
+              "value": "={{ $json.current['Numero do responsavel'] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        40,
+        1320
+      ],
+      "id": "8f9a6d18-65a8-44c2-b19b-7125037adda9",
+      "name": "Edit Fields5"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.info }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=Você é um agente especializado que recebe um JSON com dados de paciente e medicamentos, e gera um novo JSON para criação de lembretes no Google Calendar.\n\nRegras de Processamento:\nExtrair data atual do campo {{ $now }} (formato ISO 8601)\nGerar horários baseados no campo Horario:\nhoraInicio: YYYY-MM-DDTHH:00:00\nhoraFim: YYYY-MM-DDTHH+1:00:00 (hora + 1)\nCriar descrição contendo todos os dados do paciente e medicamento\nDefinir título no formato: \"[Medicamento] – lembrete de tomá-lo\"\nLimpar todos os campos (remover espaços extras, vírgulas, quebras)\nFormato de Saída:\njson\n\nWrap\n\nCopy\n{\n  \"horaInicio\": \"YYYY-MM-DDTHH:00:00\",\n  \"horaFim\": \"YYYY-MM-DDTHH:00:00\",\n  \"descricao\": \"texto com todos os dados\",\n  \"titulo\": \"formato específico\"\n}\n⚠️ IMPORTANTE:\n\nAPENAS retorne o JSON processado\nNÃO inclua explicações, comentários ou texto adicional\nNÃO use markdown ou formatação extra\nREMOVA todos os espaços extras, vírgulas e quebras de linha desnecessárias\nExemplo de Entrada:\njson\n\nWrap\n\nCopy\n{\n  \"now\": \"2023-06-15T10:30:00\",\n  \"Numero\": \"5527999150432\",\n  \"Nome\": \"Gabriel Oliveira de Souza Aguiar,\\n\",\n  \"Medicamento\": \"Alegra,\\n\",\n  \"Horario\": 14,\n  \"Quantidade disponivel\": 2,\n  \"Numero responsavel\": 21979799390\n}\nExemplo de Saída Esperada:\njson\n\nWrap\n\nCopy\n{\n  \"horaInicio\": \"2023-06-15T14:00:00\",\n  \"horaFim\": \"2023-06-15T15:00:00\",\n  \"descricao\": \"Nome: Gabriel Oliveira de Souza Aguiar\\nMedicamento: Alegra\\nHorário: 14:00\\nQuantidade disponível: 2\\nNúmero do responsável: 21979799390\\nNúmero do usuário: 5527999150432\",\n  \"titulo\": \"Alegra – lembrete de tomá-lo\"\n}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        500,
+        1320
+      ],
+      "id": "a6c9e50e-db0c-448a-a50f-1a0773a6d479",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        420,
+        1580
+      ],
+      "id": "996075df-0b3c-47a2-8c44-ac133d629187",
+      "name": "OpenAI Chat Model5",
+      "credentials": {
+        "openAiApi": {
+          "id": "C8GE50ZfR3k4QQNa",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ad89b48e-f860-47bf-ba24-02c6d7c2b6ff",
+              "name": "Inicio ",
+              "value": "={{ $json.horaInicio }}",
+              "type": "string"
+            },
+            {
+              "id": "0b9619de-57b0-439b-afe8-a90c53afc34d",
+              "name": "fim",
+              "value": "={{ $json.horaFim }}",
+              "type": "string"
+            },
+            {
+              "id": "67eb3e38-ea0f-4cc5-bccc-8270fe0e79a0",
+              "name": "descricao",
+              "value": "={{ $json.descricao }}",
+              "type": "string"
+            },
+            {
+              "id": "6a6e5df5-d54e-4485-bdca-df7a103d1086",
+              "name": "titulo",
+              "value": "={{ $json.titulo }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1080,
+        1320
+      ],
+      "id": "7f4e7110-ce31-4be3-8865-420c032b9e4e",
+      "name": "Edit Fields6"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Dados": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Error Handler",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "PushRedis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait2": {
+      "main": [
+        [
+          {
+            "node": "GetRedis",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Error Handler",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch1": {
+      "main": [
+        [
+          {
+            "node": "Error Handler",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Redis",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GetRedis": {
+      "main": [
+        [
+          {
+            "node": "Switch1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Error Handler",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mensagens": {
+      "main": [
+        [
+          {
+            "node": "Error Handler",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Redis": {
+      "main": [
+        [
+          {
+            "node": "Mensagens",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Error Handler",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Dados",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Cadastro/Atualização",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Criar usuario": {
+      "ai_tool": [
+        [
+          {
+            "node": "Cadastro/Atualização",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Atualizar dados": {
+      "ai_tool": [
+        [
+          {
+            "node": "Cadastro/Atualização",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pegar dados": {
+      "ai_tool": [
+        [
+          {
+            "node": "Cadastro/Atualização",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cadastro/Atualização": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Split Out1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out1": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait1": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "chat comum": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "chat comum",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cadastro/Atualização1": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Cadastro/Atualização1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent1": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Cadastro/Atualização1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "chat comum",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields2": {
+      "main": [
+        [
+          {
+            "node": "Split Out2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out2": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields3": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items1": {
+      "main": [
+        [],
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields4": {
+      "main": [
+        [
+          {
+            "node": "Split Out3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out3": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait3": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "chat comum1": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model4": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "chat comum1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items2": {
+      "main": [
+        [],
+        [
+          {
+            "node": "WAHA4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WAHA4": {
+      "main": [
+        [
+          {
+            "node": "Wait3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Calendar Trigger": {
+      "main": [
+        [
+          {
+            "node": "chat comum1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Calendar1": {
+      "ai_tool": [
+        [
+          {
+            "node": "chat comum1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PushRedis": {
+      "main": [
+        [
+          {
+            "node": "GetRedis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Wait1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Cadastro/Atualização",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres Chat Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Cadastro/Atualização1",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres Chat Memory1": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres Chat Memory2": {
+      "ai_memory": [
+        [
+          {
+            "node": "chat comum",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres Chat Memory3": {
+      "ai_memory": [
+        [
+          {
+            "node": "Cadastro/Atualização",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets Trigger1": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code1": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields5": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Code1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model5": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields6": {
+      "main": [
+        [
+          {
+            "node": "Google Calendar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "6b636e50-4dd2-46d7-81b5-2b7a0228d40a",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "93aa5aa4deebc84bd26a286842b8c04820d3133868b4f873967c85aa20ea76a6"
+  },
+  "id": "O3MRbMwLOs3svIP3",
+  "tags": []
+}
